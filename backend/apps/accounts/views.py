@@ -7,7 +7,7 @@ from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User, EmailVerification, PasswordReset
+from .models import User, EmailVerification, PasswordReset, TelegramLinkToken
 from .serializers import (
     RegisterSerializer, LoginSerializer, UserSerializer,
     UserUpdateSerializer, ChangePasswordSerializer
@@ -41,11 +41,12 @@ class RegisterView(generics.CreateAPIView):
         except Exception:
             pass
 
-        # Email tasdiqlash xati
-        try:
-            _send_verification_email(user)
-        except Exception:
-            pass
+        # Email tasdiqlash xati (faqat email kiritilgan bo'lsa)
+        if user.email:
+            try:
+                _send_verification_email(user)
+            except Exception:
+                pass
 
         return Response({
             'user': UserSerializer(user).data,
@@ -122,6 +123,57 @@ class UserStatsView(APIView):
             'is_premium': user.is_premium,
             'premium_until': user.premium_until,
         })
+
+
+# ─── Telegram bog'lash ─────────────────────────────────────────────────────────
+
+class TelegramLinkTokenView(APIView):
+    """Joriy foydalanuvchi uchun bir martalik deep-link token yaratadi.
+
+    Frontend natijadagi `deep_link` ni yangi oynada ochadi -> foydalanuvchi
+    botda /start <token> ni yuboradi -> akkaunt avtomatik ulanadi.
+    """
+
+    def post(self, request):
+        user = request.user
+
+        if user.telegram_id:
+            return Response({
+                'already_linked': True,
+                'telegram_username': user.telegram_username,
+                'message': 'Telegram allaqachon ulangan',
+            })
+
+        # Eski foydalanilmagan tokenlarni tozalaymiz
+        TelegramLinkToken.objects.filter(user=user, is_used=False).delete()
+
+        token = get_random_string(40)
+        TelegramLinkToken.objects.create(
+            user=user,
+            token=token,
+            expires_at=timezone.now() + timezone.timedelta(minutes=10),
+        )
+
+        bot_username = settings.TELEGRAM_BOT_USERNAME
+        deep_link = f"https://t.me/{bot_username}?start={token}" if bot_username else ''
+
+        return Response({
+            'token': token,
+            'deep_link': deep_link,
+            'bot_username': bot_username,
+            'expires_in': 600,
+        }, status=status.HTTP_201_CREATED)
+
+
+class TelegramUnlinkView(APIView):
+    """Telegram akkauntini uzish."""
+
+    def post(self, request):
+        user = request.user
+        user.telegram_id = None
+        user.telegram_username = ''
+        user.save(update_fields=['telegram_id', 'telegram_username'])
+        return Response({'message': 'Telegram uzildi', 'telegram_linked': False})
 
 
 # ─── Email tasdiqlash ──────────────────────────────────────────────────────────

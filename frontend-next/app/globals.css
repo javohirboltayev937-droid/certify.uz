@@ -2,71 +2,177 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..800;1,14..32,300..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
-  body { @apply bg-slate-50 text-slate-900 font-sans antialiased; }
+  html { scroll-behavior: smooth; }
+  body { @apply bg-[#020B18] text-slate-100 font-sans antialiased; }
   h1, h2, h3, h4 { @apply font-semibold tracking-tight; }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #020B18; }
+  ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.4); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.7); }
+
+  ::selection { background: rgba(139,92,246,0.3); color: white; }
 }
 
 @layer components {
-  /* Buttons */
+  /* ─── Buttons ─── */
   .btn {
     @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl
-    transition-all duration-150 focus-visible:outline-none focus-visible:ring-2
+    transition-all duration-200 focus-visible:outline-none focus-visible:ring-2
     focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none;
   }
   .btn-sm  { @apply btn text-sm px-3.5 py-2; }
   .btn-md  { @apply btn text-sm px-5 py-2.5; }
-  .btn-lg  { @apply btn text-base px-6 py-3; }
-  .btn-primary   { @apply btn-md bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-sm focus-visible:ring-primary-500; }
-  .btn-secondary { @apply btn-md bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-slate-400; }
-  .btn-ghost     { @apply btn-md text-slate-600 hover:bg-slate-100 focus-visible:ring-slate-400; }
-  .btn-danger    { @apply btn-md bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500; }
+  .btn-lg  { @apply btn text-base px-7 py-3.5; }
 
-  /* Cards */
-  .card       { @apply bg-white rounded-2xl border border-slate-100 shadow-card; }
-  .card-hover { @apply card hover:shadow-card-hover hover:border-slate-200 transition-all duration-200; }
-  .card-p     { @apply card p-6; }
-
-  /* Form */
-  .input {
-    @apply w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm
-    placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500
-    focus:border-transparent transition-all duration-150;
+  .btn-primary { @apply btn-md bg-violet-600 text-white hover:bg-violet-500 shadow-neon-purple focus-visible:ring-violet-500; }
+  .btn-secondary {
+    @apply btn-md text-white border backdrop-blur-sm focus-visible:ring-white/30;
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.15);
   }
-  .input-error { @apply input border-red-300 focus:ring-red-400; }
-  .label { @apply block text-sm font-medium text-slate-700 mb-1.5; }
+  .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+  .btn-ghost { @apply btn-md text-slate-400 hover:bg-white/5 hover:text-white focus-visible:ring-white/20; }
+  .btn-gradient {
+    @apply btn-lg text-white font-bold tracking-wide;
+    background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+    background-size: 200% 200%;
+  }
+  .btn-gradient:hover { filter: brightness(1.18); transform: translateY(-2px); box-shadow: 0 0 30px rgba(124,58,237,0.5), 0 8px 20px rgba(0,0,0,0.3); }
+  .btn-glass {
+    @apply btn-lg text-white font-semibold border;
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.15);
+    backdrop-filter: blur(12px);
+  }
+  .btn-glass:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
 
-  /* Badges */
-  .badge        { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium; }
+  /* ─── Cards ─── */
+  .card {
+    @apply rounded-2xl backdrop-blur-xl;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .card-hover { @apply card transition-all duration-200; }
+  .card-hover:hover { background: rgba(255,255,255,0.07); border-color: rgba(139,92,246,0.3); }
+  .card-p { @apply card p-6; }
+
+  .glass-card {
+    @apply rounded-2xl backdrop-blur-xl;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .glass-card-hover {
+    @apply glass-card cursor-pointer transition-all duration-300;
+  }
+  .glass-card-hover:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(139,92,246,0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+    transform: translateY(-4px);
+  }
+  .glass-card-pricing {
+    @apply rounded-3xl backdrop-blur-xl;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 16px 64px rgba(0,0,0,0.5);
+  }
+  .glass-card-pricing-featured {
+    @apply rounded-3xl backdrop-blur-xl;
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(139,92,246,0.4);
+    box-shadow: 0 0 50px rgba(124,58,237,0.2), 0 16px 64px rgba(0,0,0,0.5);
+  }
+
+  /* ─── Form ─── */
+  .input {
+    @apply w-full px-4 py-2.5 rounded-xl text-white text-sm placeholder:text-slate-500
+    focus:outline-none transition-all duration-200;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .input:focus { background: rgba(255,255,255,0.08); border-color: rgba(139,92,246,0.5); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+  .input-dark {
+    @apply w-full px-4 py-3 rounded-xl text-white text-sm placeholder:text-slate-500
+    focus:outline-none transition-all duration-200;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .input-dark:focus { background: rgba(255,255,255,0.08); border-color: rgba(139,92,246,0.5); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+  .input-error { border-color: rgba(239,68,68,0.6) !important; }
+  .label { @apply block text-sm font-medium text-slate-400 mb-1.5; }
+  .label-dark { @apply block text-sm font-medium text-slate-400 mb-1.5; }
+
+  /* ─── Badges ─── */
+  .badge { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium; }
   .badge-blue   { @apply badge bg-blue-50 text-blue-700 ring-1 ring-blue-100; }
   .badge-green  { @apply badge bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100; }
   .badge-yellow { @apply badge bg-amber-50 text-amber-700 ring-1 ring-amber-100; }
   .badge-red    { @apply badge bg-red-50 text-red-700 ring-1 ring-red-100; }
   .badge-slate  { @apply badge bg-slate-100 text-slate-600; }
   .badge-purple { @apply badge bg-purple-50 text-purple-700 ring-1 ring-purple-100; }
-
-  /* Dividers */
-  .divider { @apply border-t border-slate-100 my-6; }
-
-  /* Quiz */
-  .quiz-option {
-    @apply w-full text-left px-5 py-3.5 rounded-xl border-2 border-slate-200 text-sm font-medium
-    hover:border-primary-300 hover:bg-primary-50 transition-all duration-100 cursor-pointer;
+  .badge-glow {
+    @apply badge font-semibold tracking-wider uppercase text-[10px];
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.35);
+    color: #c4b5fd;
   }
-  .quiz-option.selected { @apply border-primary-500 bg-primary-50 text-primary-800; }
-  .quiz-option.correct  { @apply border-emerald-500 bg-emerald-50 text-emerald-800; }
-  .quiz-option.wrong    { @apply border-red-400 bg-red-50 text-red-800; }
+  .badge-verified {
+    @apply badge font-medium;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.35);
+    color: #34d399;
+  }
 
-  /* Progress */
-  .progress-track { @apply h-2 bg-slate-100 rounded-full overflow-hidden; }
-  .progress-bar   { @apply h-full bg-primary-500 rounded-full transition-all duration-500; }
+  /* ─── Text ─── */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #ffffff 0%, #c4b5fd 45%, #93c5fd 100%);
+  }
+  .gradient-text-purple {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+  }
+  .gradient-text-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  }
+  .section-tag {
+    @apply inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase;
+    background: rgba(139,92,246,0.12);
+    border: 1px solid rgba(139,92,246,0.3);
+    color: #a78bfa;
+  }
 
-  /* Page sections */
-  .page-hero { @apply bg-white border-b border-slate-100 py-10 px-4; }
-  .container { @apply max-w-6xl mx-auto px-4; }
-  .section-title    { @apply text-2xl font-bold text-slate-900; }
-  .section-subtitle { @apply text-slate-500 mt-1 text-sm; }
+  /* ─── Dividers ─── */
+  .divider { @apply border-t border-white/10 my-6; }
+  .divider-gradient {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139,92,246,0.4), transparent);
+  }
+
+  /* ─── Legacy (auth / quiz pages) ─── */
+  .progress-track { @apply h-2 rounded-full overflow-hidden; background: rgba(255,255,255,0.08); }
+  .progress-bar   { @apply h-full rounded-full transition-all duration-500; background: linear-gradient(90deg,#7c3aed,#2563eb); }
+  .page-hero      { @apply py-10 px-4; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .container      { @apply max-w-6xl mx-auto px-4; }
+  .section-title  { @apply text-2xl font-bold text-white; }
+  .section-subtitle { @apply text-slate-400 mt-1 text-sm; }
+
+  .quiz-option {
+    @apply w-full text-left px-5 py-3.5 rounded-xl text-sm font-medium transition-all duration-100 cursor-pointer text-slate-300;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.03);
+  }
+  .quiz-option:hover { background: rgba(139,92,246,0.08); border-color: rgba(139,92,246,0.4); }
+  .quiz-option.selected { background: rgba(124,58,237,0.15); border-color: rgba(139,92,246,0.6); color: #c4b5fd; }
+  .quiz-option.correct  { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.5); color: #34d399; }
+  .quiz-option.wrong    { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); color: #f87171; }
+  .quiz-option.opacity-60 { opacity: 0.5; }
 }

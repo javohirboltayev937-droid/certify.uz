@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchProfile } from '@/lib/store/authSlice'
 import { authAPI, paymentsAPI } from '@/lib/api'
-import { ShieldCheckIcon, CheckCircleIcon, TrophyIcon } from '@heroicons/react/24/outline'
+import { ShieldCheckIcon, CheckCircleIcon, TrophyIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
 import { PageLoader } from '@/components/ui'
 import toast from 'react-hot-toast'
 
@@ -15,10 +15,10 @@ export default function Profile() {
   const [subscription, setSubscription] = useState(null)
   const [tab, setTab] = useState('profile')
   const [loading, setLoading] = useState(false)
+  const [tgLoading, setTgLoading] = useState(false)
+  const [tgPolling, setTgPolling] = useState(false)
 
-  // profile form state
   const [form, setForm] = useState({ first_name: '', last_name: '', phone: '', bio: '', school: '', region: '' })
-  // password form state
   const [pwForm, setPwForm] = useState({ old_password: '', new_password: '', confirm_new: '' })
 
   useEffect(() => {
@@ -62,26 +62,66 @@ export default function Profile() {
     } finally { setLoading(false) }
   }
 
+  const onLinkTelegram = async () => {
+    setTgLoading(true)
+    try {
+      const { data } = await authAPI.telegramLinkToken()
+      if (data.already_linked) {
+        await dispatch(fetchProfile())
+        toast.success('Telegram allaqachon ulangan')
+        return
+      }
+      if (!data.deep_link) {
+        toast.error('Bot sozlanmagan (TELEGRAM_BOT_USERNAME)')
+        return
+      }
+      window.open(data.deep_link, '_blank')
+      toast('Telegram ochildi — botda "Start" ni bosing', { icon: '📨' })
+      setTgPolling(true)
+    } catch {
+      toast.error('Xatolik yuz berdi')
+    } finally { setTgLoading(false) }
+  }
+
+  const onUnlinkTelegram = async () => {
+    setTgLoading(true)
+    try {
+      await authAPI.telegramUnlink()
+      await dispatch(fetchProfile())
+      toast.success('Telegram uzildi')
+    } catch { toast.error('Xatolik') } finally { setTgLoading(false) }
+  }
+
+  useEffect(() => {
+    if (!tgPolling) return
+    if (user?.telegram_linked) { setTgPolling(false); toast.success('Telegram ulandi! ✅'); return }
+    const iv = setInterval(() => dispatch(fetchProfile()), 3000)
+    const stop = setTimeout(() => setTgPolling(false), 120000)
+    return () => { clearInterval(iv); clearTimeout(stop) }
+  }, [tgPolling, user?.telegram_linked])
+
   const REGIONS = ['Toshkent', 'Samarqand', 'Buxoro', 'Andijon', "Farg'ona", 'Namangan',
     'Qashqadaryo', 'Surxondaryo', 'Xorazm', 'Navoiy', 'Jizzax', 'Sirdaryo', "Qoraqalpog'iston"]
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen py-8 px-4">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <ShieldCheckIcon className="w-7 h-7 text-primary-600" /> Profil sozlamalari
+        <h1 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
+          <ShieldCheckIcon className="w-7 h-7 text-violet-400" /> Profil sozlamalari
         </h1>
 
         {/* Profile header */}
         <div className="card p-6 mb-6 flex items-center gap-5">
-          <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center text-3xl font-bold text-primary-700 flex-shrink-0">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-violet-300 flex-shrink-0"
+               style={{ background: 'rgba(139,92,246,0.2)' }}>
             {user?.first_name?.[0] || user?.full_name?.[0] || user?.username?.[0] || '?'}
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">{user?.first_name} {user?.last_name}</h2>
-            <p className="text-gray-500">{user?.email}</p>
+            <h2 className="text-xl font-bold text-white">{user?.first_name} {user?.last_name}</h2>
+            <p className="text-slate-400">{user?.email}</p>
             {user?.is_premium && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 mt-1">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium mt-1"
+                    style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#fbbf24' }}>
                 <TrophyIcon className="w-3.5 h-3.5" /> Premium · {new Date(user.premium_until).toLocaleDateString('uz-UZ')} gacha
               </span>
             )}
@@ -89,16 +129,20 @@ export default function Profile() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mb-6">
+        <div className="flex gap-1 rounded-xl p-1 mb-6" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           {[
             { id: 'profile',      label: 'Profil' },
             { id: 'password',     label: 'Parol' },
             { id: 'subscription', label: 'Obuna' },
+            { id: 'telegram',     label: 'Telegram' },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === t.id ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'
-              }`}>
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                tab === t.id
+                  ? 'text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              style={tab === t.id ? { background: 'linear-gradient(135deg,#7c3aed,#2563eb)' } : {}}>
               {t.label}
             </button>
           ))}
@@ -137,7 +181,7 @@ export default function Profile() {
                 <label className="label">O'zingiz haqingizda</label>
                 <textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} className="input" rows={3} />
               </div>
-              <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saqlanmoqda...' : 'Saqlash'}</button>
+              <button type="submit" disabled={loading} className="btn-gradient">{loading ? 'Saqlanmoqda...' : 'Saqlash'}</button>
             </form>
           </div>
         )}
@@ -156,7 +200,7 @@ export default function Profile() {
                   <input type="password" value={pwForm[f.key]} onChange={e => setPwForm(p => ({ ...p, [f.key]: e.target.value }))} className="input" />
                 </div>
               ))}
-              <button type="submit" disabled={loading} className="btn-primary">{loading ? "O'zgartirilmoqda..." : "Parolni o'zgartirish"}</button>
+              <button type="submit" disabled={loading} className="btn-gradient">{loading ? "O'zgartirilmoqda..." : "Parolni o'zgartirish"}</button>
             </form>
           </div>
         )}
@@ -167,28 +211,76 @@ export default function Profile() {
             {subscription?.subscription ? (
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <ShieldCheckIcon className="w-8 h-8 text-green-600" />
+                  <ShieldCheckIcon className="w-8 h-8 text-emerald-400" />
                   <div>
-                    <h3 className="font-bold text-gray-900">Faol obuna: {subscription.subscription.plan.name}</h3>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="font-bold text-white">Faol obuna: {subscription.subscription.plan.name}</h3>
+                    <p className="text-sm text-slate-400">
                       {new Date(subscription.subscription.end_date).toLocaleDateString('uz-UZ')} gacha
                     </p>
                   </div>
                 </div>
                 <ul className="space-y-2">
                   {subscription.subscription.plan.features?.map((f, i) => (
-                    <li key={i} className="text-sm text-gray-700 flex items-center gap-2">
-                      <CheckCircleIcon className="w-4 h-4 text-green-500" /> {f}
+                    <li key={i} className="text-sm text-slate-300 flex items-center gap-2">
+                      <CheckCircleIcon className="w-4 h-4 text-emerald-400" /> {f}
                     </li>
                   ))}
                 </ul>
               </div>
             ) : (
               <div className="text-center py-8">
-                <TrophyIcon className="w-12 h-12 text-amber-300 mx-auto mb-3" />
-                <h3 className="font-bold text-gray-900 mb-2">Premium obuna yo'q</h3>
-                <p className="text-gray-500 text-sm mb-4">Premium bilan barcha imkoniyatlardan foydalaning</p>
-                <a href="/pricing" className="btn-primary inline-flex">Premium olish</a>
+                <TrophyIcon className="w-12 h-12 text-amber-400 mx-auto mb-3" />
+                <h3 className="font-bold text-white mb-2">Premium obuna yo'q</h3>
+                <p className="text-slate-400 text-sm mb-4">Premium bilan barcha imkoniyatlardan foydalaning</p>
+                <a href="/pricing" className="btn-gradient inline-flex">Premium olish</a>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Telegram tab */}
+        {tab === 'telegram' && (
+          <div className="card p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center"
+                   style={{ background: 'rgba(14,165,233,0.15)' }}>
+                <PaperAirplaneIcon className="w-6 h-6 text-sky-400 -rotate-45" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white">Telegram bot</h3>
+                <p className="text-sm text-slate-400">Akkauntingizni botga ulang va to'lovlarni Telegram orqali amalga oshiring</p>
+              </div>
+            </div>
+
+            {user?.telegram_linked ? (
+              <div>
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm mb-4"
+                     style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399' }}>
+                  <CheckCircleIcon className="w-5 h-5" />
+                  Telegram ulangan{user?.telegram_username ? ` (@${user.telegram_username})` : ''}
+                </div>
+                <button onClick={onUnlinkTelegram} disabled={tgLoading}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                  style={{ border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', background: 'rgba(239,68,68,0.08)' }}>
+                  {tgLoading ? 'Uzilmoqda...' : 'Telegramni uzish'}
+                </button>
+              </div>
+            ) : (
+              <div>
+                <ol className="text-sm text-slate-400 space-y-1.5 mb-5 list-decimal list-inside">
+                  <li>"Telegramga ulash" tugmasini bosing</li>
+                  <li>Ochilgan botda <b className="text-slate-200">Start</b> tugmasini bosing</li>
+                  <li>Akkaunt avtomatik ulanadi va bu sahifa yangilanadi</li>
+                </ol>
+                <button onClick={onLinkTelegram} disabled={tgLoading}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
+                  style={{ background: 'linear-gradient(135deg,#0ea5e9,#0284c7)' }}>
+                  <PaperAirplaneIcon className="w-4 h-4 -rotate-45" />
+                  {tgLoading ? 'Ochilmoqda...' : 'Telegramga ulash'}
+                </button>
+                {tgPolling && (
+                  <p className="text-sm text-sky-400 mt-3 animate-pulse">⏳ Telegramda Start bosilishini kutmoqdamiz...</p>
+                )}
               </div>
             )}
           </div>

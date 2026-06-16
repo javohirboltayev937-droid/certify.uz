@@ -18,8 +18,8 @@ export const fetchProfile = createAsyncThunk('auth/fetchProfile', async (_, { re
 export const loginUser = createAsyncThunk('auth/login', async (creds, { rejectWithValue }) => {
   try {
     const { data } = await axios.post('/api/auth/login/', creds)
-    localStorage.setItem('access_token', data.access)
-    localStorage.setItem('refresh_token', data.refresh)
+    localStorage.setItem('access_token', data.tokens.access)
+    localStorage.setItem('refresh_token', data.tokens.refresh)
     return data
   } catch (e) {
     return rejectWithValue(e.response?.data || { detail: 'Xatolik' })
@@ -29,8 +29,8 @@ export const loginUser = createAsyncThunk('auth/login', async (creds, { rejectWi
 export const registerUser = createAsyncThunk('auth/register', async (data, { rejectWithValue }) => {
   try {
     const res = await axios.post('/api/auth/register/', data)
-    localStorage.setItem('access_token', res.data.access)
-    localStorage.setItem('refresh_token', res.data.refresh)
+    localStorage.setItem('access_token', res.data.tokens.access)
+    localStorage.setItem('refresh_token', res.data.tokens.refresh)
     return res.data
   } catch (e) {
     return rejectWithValue(e.response?.data || { detail: 'Xatolik' })

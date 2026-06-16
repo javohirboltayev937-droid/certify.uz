@@ -1,22 +1,26 @@
-from django.urls import path
+from django.urls import re_path
 from . import views
 
 urlpatterns = [
     # Auth
-    path('register/', views.RegisterView.as_view(), name='register'),
-    path('login/', views.LoginView.as_view(), name='login'),
-    path('logout/', views.LogoutView.as_view(), name='logout'),
+    re_path(r'^register/?$', views.RegisterView.as_view(), name='register'),
+    re_path(r'^login/?$', views.LoginView.as_view(), name='login'),
+    re_path(r'^logout/?$', views.LogoutView.as_view(), name='logout'),
 
     # Profil
-    path('profile/', views.ProfileView.as_view(), name='profile'),
-    path('change-password/', views.ChangePasswordView.as_view(), name='change-password'),
-    path('stats/', views.UserStatsView.as_view(), name='user-stats'),
+    re_path(r'^profile/?$', views.ProfileView.as_view(), name='profile'),
+    re_path(r'^change-password/?$', views.ChangePasswordView.as_view(), name='change-password'),
+    re_path(r'^stats/?$', views.UserStatsView.as_view(), name='user-stats'),
+
+    # Telegram bog'lash
+    re_path(r'^telegram/link-token/?$', views.TelegramLinkTokenView.as_view(), name='telegram-link-token'),
+    re_path(r'^telegram/unlink/?$', views.TelegramUnlinkView.as_view(), name='telegram-unlink'),
 
     # Email tasdiqlash
-    path('verify-email/', views.VerifyEmailView.as_view(), name='verify-email'),
-    path('resend-verification/', views.ResendVerificationView.as_view(), name='resend-verification'),
+    re_path(r'^verify-email/?$', views.VerifyEmailView.as_view(), name='verify-email'),
+    re_path(r'^resend-verification/?$', views.ResendVerificationView.as_view(), name='resend-verification'),
 
     # Parol tiklash
-    path('forgot-password/', views.ForgotPasswordView.as_view(), name='forgot-password'),
-    path('reset-password/', views.ResetPasswordView.as_view(), name='reset-password'),
+    re_path(r'^forgot-password/?$', views.ForgotPasswordView.as_view(), name='forgot-password'),
+    re_path(r'^reset-password/?$', views.ResetPasswordView.as_view(), name='reset-password'),
 ]

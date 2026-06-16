@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  skipTrailingSlashRedirect: true,
   async rewrites() {
     return [
       {
@@ -9,7 +10,12 @@ const nextConfig = {
     ]
   },
   images: {
-    remotePatterns: [{ protocol: 'http', hostname: 'localhost' }],
+    remotePatterns: [
+      { protocol: 'http',  hostname: 'localhost' },
+      { protocol: 'https', hostname: '*.railway.app' },
+      { protocol: 'https', hostname: 'certify.uz' },
+      { protocol: 'https', hostname: 'www.certify.uz' },
+    ],
   },
 }
 

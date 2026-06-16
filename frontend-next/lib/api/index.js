@@ -10,6 +10,8 @@ export const authAPI = {
   getStats:            () => api.get('/auth/stats/'),
   forgotPassword:      (d) => api.post('/auth/forgot-password/', d),
   resetPassword:       (d) => api.post('/auth/reset-password/', d),
+  telegramLinkToken:   () => api.post('/auth/telegram/link-token/'),
+  telegramUnlink:      () => api.post('/auth/telegram/unlink/'),
 }
 
 export const coursesAPI = {

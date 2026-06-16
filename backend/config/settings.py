@@ -34,6 +34,7 @@ LOCAL_APPS = [
     'apps.dtm',
     'apps.payments',
     'apps.progress',
+    'apps.integrations',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -51,6 +52,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+APPEND_SLASH = False
 
 TEMPLATES = [
     {
@@ -141,13 +143,16 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'https://certify.uz',
-    'https://www.certify.uz',
-]
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:3000,http://localhost:3001,http://localhost:5173,https://certify.uz,https://www.certify.uz',
+).split(',')
 CORS_ALLOW_CREDENTIALS = True
+
+# Railway / Render deploy bo'lganda ALLOWED_HOSTS ga ularning domenini qo'shish
+RAILWAY_STATIC_URL = config('RAILWAY_STATIC_URL', default='')
+if RAILWAY_STATIC_URL:
+    ALLOWED_HOSTS.append(RAILWAY_STATIC_URL)
 
 if config('USE_SQLITE', default=False, cast=bool):
     CACHES = {
@@ -200,6 +205,12 @@ ESKIZ_SENDER = config('ESKIZ_SENDER', default='4546')  # Eskiz dan olinadigan se
 # ─── Telegram Bot ─────────────────────────────────────────────────────────────
 TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN', default='')
 TELEGRAM_ADMIN_CHAT_ID = config('TELEGRAM_ADMIN_CHAT_ID', default='')
+TELEGRAM_BOT_USERNAME = config('TELEGRAM_BOT_USERNAME', default='')  # @ siz, masalan: certify_uz_bot
+# Webhook so'rovlarini tasdiqlash uchun maxfiy kalit (X-Telegram-Bot-Api-Secret-Token)
+TELEGRAM_WEBHOOK_SECRET = config('TELEGRAM_WEBHOOK_SECRET', default='')
+# To'lov uchun karta raqami (bot orqali ko'rsatiladi)
+PAYMENT_CARD_NUMBER = config('PAYMENT_CARD_NUMBER', default='')
+PAYMENT_CARD_HOLDER = config('PAYMENT_CARD_HOLDER', default='')
 
 ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
 
