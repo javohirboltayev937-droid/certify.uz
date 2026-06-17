@@ -444,8 +444,8 @@ export default function LandingPage() {
       desc:'Jismoniy shaxslar va kichik loyihalar uchun ideal',
       color:'#60a5fa',
       features:[
-        { text:'Oyiga 100 ta tekshiruv',         ok:true  },
-        { text:'5 ta sertifikat shabloni',        ok:true  },
+        { text:'Oyiga 50 ta tekshiruv',          ok:true  },
+        { text:'3 ta sertifikat shabloni',        ok:true  },
         { text:'QR kod generatsiyasi',            ok:true  },
         { text:'Ommaviy tekshiruv sahifasi',      ok:true  },
         { text:'API kirish',                      ok:false },
@@ -456,13 +456,13 @@ export default function LandingPage() {
       ctaHref:'/register',
     },
     {
-      name:'Professional', price:'$49', period:'/ oy',
+      name:'Professional', price:'99 000 so\'m', period:'/ oy',
       desc:'Kengayib borayotgan tashkilotlar uchun',
       color:'#a78bfa',
       featured:true,
       badge:'Eng Mashhur',
       features:[
-        { text:'Oyiga 10,000 ta tekshiruv',      ok:true },
+        { text:'Oyiga 5,000 ta tekshiruv',       ok:true },
         { text:'Cheksiz shablonlar',             ok:true },
         { text:'QR + NFC tekshiruvi',            ok:true },
         { text:'White-label portal',             ok:true },
@@ -474,7 +474,7 @@ export default function LandingPage() {
       ctaHref:'/register?plan=pro',
     },
     {
-      name:'Korporativ', price:'Alohida', period:'',
+      name:'Korporativ', price:'299 000 so\'m', period:'/ oy',
       desc:'Murakkab ehtiyojlari bo\'lgan yirik muassasalar uchun',
       color:'#34d399',
       features:[
@@ -486,8 +486,8 @@ export default function LandingPage() {
         { text:'99.99% ishlash kafolati SLA',    ok:true },
         { text:'Maxsus CSM va qo\'llab-quvvatlash', ok:true },
       ],
-      cta:'Savdo Bo\'limi bilan Bog\'lanish',
-      ctaHref:'/#contact',
+      cta:'Bog\'lanish',
+      ctaHref:'/register?plan=enterprise',
     },
   ]
 
@@ -800,7 +800,7 @@ export default function LandingPage() {
             <h2 className="text-4xl lg:text-5xl font-black mb-5 text-white">
               Bepul boshlang,<br /><span className="gradient-text">ishonch bilan rivojlaning</span>
             </h2>
-            <p className="text-slate-500 text-lg max-w-2xl mx-auto">Yashirin to'lovlar yo'q. Istalgan vaqt bekor qiling. Barcha to'lovli rejalarda 14 kunlik bepul sinov mavjud.</p>
+            <p className="text-slate-500 text-lg max-w-2xl mx-auto">Ochilish narxlari — keyinchalik oshadi. Hozir arzon narxda boshlang va imkoniyatlardan to'liq foydalaning.</p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             {pricingPlans.map(({ name,price,period,desc,color,featured,badge,features:feats,cta,ctaHref }) => (
