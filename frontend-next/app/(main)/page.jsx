@@ -390,19 +390,11 @@ function FAQItem({ q, a }) {
 export default function LandingPage() {
   const [verifyId, setVerifyId] = useState('')
   const [verifyState, setVerifyState] = useState('idle')
-  const [contactForm, setContactForm] = useState({ name:'', email:'', message:'' })
-  const [contactSent, setContactSent] = useState(false)
-
   const handleVerify = (e) => {
     e.preventDefault()
     if (!verifyId.trim()) return
     setVerifyState('loading')
     setTimeout(() => setVerifyState(verifyId.trim().toUpperCase().startsWith('CZ') ? 'success' : 'error'), 1800)
-  }
-
-  const handleContact = (e) => {
-    e.preventDefault()
-    setTimeout(() => setContactSent(true), 600)
   }
 
   /* ── ma'lumotlar ── */
@@ -915,91 +907,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══ BOG'LANISH ═══ */}
-      <section id="contact" className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0" style={{ background:'radial-gradient(ellipse 80% 60% at 50% 50%,rgba(124,58,237,0.08) 0%,transparent 70%)' }} />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
-            {/* Chap: Ma'lumotlar */}
-            <div>
-              <div className="section-tag mb-6 w-fit">Biz Bilan Bog'laning</div>
-              <h2 className="text-4xl lg:text-5xl font-black mb-5 text-white">
-                Keling, kelajakni<br /><span className="gradient-text">birga quraylik</span>
-              </h2>
-              <p className="text-slate-500 text-lg leading-relaxed mb-10">
-                Tashkilotingizda diplom firibgarligini bartaraf etishga tayyormisiz? Jamoamiz sizni boshlashda yordam berishga tayyor.
-              </p>
-              <div className="space-y-5">
-                {[
-                  { icon:EnvelopeIcon,    label:'Email',    value:'javohirboltayev937@gmail.com', color:'#a78bfa', rgb:'167,139,250' },
-                  { icon:TelegramIcon,    label:'Telegram', value:'@javohir_boltayev',             color:'#60a5fa', rgb:'96,165,250' },
-                  { icon:MapPinIcon,      label:'Ofis',     value:'Kitob, Qashqadaryo, O\'zbekiston', color:'#34d399', rgb:'52,211,153' },
-                ].map(({ icon:Icon, label, value, color, rgb }) => (
-                  <div key={label} className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                         style={{ background:`rgba(${rgb},0.12)`, border:`1px solid rgba(${rgb},0.25)` }}>
-                      <Icon className="w-5 h-5" style={{ color }} />
-                    </div>
-                    <div>
-                      <div className="text-slate-600 text-xs uppercase tracking-wider mb-0.5">{label}</div>
-                      <div className="text-white font-medium">{value}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* O'ng: Forma */}
-            <div>
-              {contactSent ? (
-                <div className="glass-card p-10 text-center">
-                  <CheckCircleSolid className="w-16 h-16 text-emerald-400 mx-auto mb-5" style={{ filter:'drop-shadow(0 0 16px rgba(16,185,129,0.6))' }} />
-                  <h3 className="text-white text-2xl font-black mb-3">Xabar Yuborildi!</h3>
-                  <p className="text-slate-500">24 soat ichida javob beramiz. Siz bilan ishlashni sabrsizlik bilan kutamiz.</p>
-                </div>
-              ) : (
-                <div className="glass-card p-8">
-                  <form onSubmit={handleContact} className="space-y-5">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="label-dark">Ism</label>
-                        <input type="text" required placeholder="Ismingiz"
-                          value={contactForm.name} onChange={e => setContactForm(f => ({ ...f,name:e.target.value }))}
-                          className="input-dark w-full" />
-                      </div>
-                      <div>
-                        <label className="label-dark">Email</label>
-                        <input type="email" required placeholder="email@manzil.uz"
-                          value={contactForm.email} onChange={e => setContactForm(f => ({ ...f,email:e.target.value }))}
-                          className="input-dark w-full" />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="label-dark">Tashkilot</label>
-                      <input type="text" placeholder="Universitet / Kompaniya nomi"
-                        className="input-dark w-full" />
-                    </div>
-                    <div>
-                      <label className="label-dark">Xabar</label>
-                      <textarea rows={4} required placeholder="Diplom boshqaruvi ehtiyojlaringiz haqida gapirib bering..."
-                        value={contactForm.message} onChange={e => setContactForm(f => ({ ...f,message:e.target.value }))}
-                        className="input-dark w-full resize-none" />
-                    </div>
-                    <button type="submit" className="w-full py-4 rounded-xl font-black text-white transition-all duration-200 hover:-translate-y-1"
-                            style={{ background:'linear-gradient(135deg,#7c3aed,#2563eb)', boxShadow:'0 0 25px rgba(124,58,237,0.4)' }}>
-                      Xabar Yuborish <ArrowRightIcon className="w-4 h-4 inline ml-1" />
-                    </button>
-                    <p className="text-slate-600 text-xs text-center">
-                      Odatda 2-4 ish soati ichida javob beramiz.
-                    </p>
-                  </form>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ═══ CHAQIRUV BANNERI ═══ */}
       <section className="py-24 relative overflow-hidden">
