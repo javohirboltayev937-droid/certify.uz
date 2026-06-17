@@ -22,7 +22,7 @@ export default function DemoLogin() {
     const run = async () => {
       try {
         setStatus('Demo akkauntga kirilmoqda...')
-        await dispatch(loginUser({ username: 'demo', password: 'Demo1234!' })).unwrap()
+        await dispatch(loginUser({ phone: '+998900000000', password: 'Demo1234!' })).unwrap()
         setStatus('Muvaffaqiyatli! Yo\'naltirilmoqda...')
         router.replace('/dashboard')
       } catch {
