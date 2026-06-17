@@ -9,8 +9,7 @@ import { fetchProfile } from '@/lib/store/authSlice'
 function AuthInit() {
   const dispatch = useDispatch()
   useEffect(() => {
-    const token = localStorage.getItem('access_token')
-    if (token) dispatch(fetchProfile())
+    dispatch(fetchProfile())
   }, [dispatch])
   return null
 }
