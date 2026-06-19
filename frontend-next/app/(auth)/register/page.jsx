@@ -26,7 +26,7 @@ export default function Register() {
     if (!form.first_name) errs.first_name = 'Ism kiriting'
     if (!form.last_name) errs.last_name = 'Familiya kiriting'
     if (!form.phone || form.phone.replace(/\D/g, '').length < 7) errs.phone = "To'g'ri telefon raqam kiriting"
-    if (!form.password || form.password.length < 8) errs.password = 'Kamida 8 ta belgi'
+    if (!form.password || form.password.length < 6) errs.password = 'Kamida 6 ta belgi'
     if (form.confirm_password !== form.password) errs.confirm_password = 'Parollar mos kelmadi'
     setErrors(errs)
     if (Object.keys(errs).length === 0) {
@@ -85,7 +85,7 @@ export default function Register() {
 
             <div>
               <label className="label">Parol</label>
-              <input type="password" value={form.password} onChange={set('password')} className="input" placeholder="••••••••" />
+              <input type="password" value={form.password} onChange={set('password')} className="input" placeholder="Kamida 6 ta belgi" />
               {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
             </div>
 
