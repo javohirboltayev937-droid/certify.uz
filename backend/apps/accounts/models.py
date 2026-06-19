@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+import random
+import string
 
 
 class User(AbstractUser):
@@ -61,6 +63,37 @@ class TelegramLinkToken(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.token[:8]}…"
+
+
+class OTPCode(models.Model):
+    phone      = models.CharField(max_length=20, db_index=True)
+    code       = models.CharField(max_length=6)
+    first_name = models.CharField(max_length=50, blank=True)
+    last_name  = models.CharField(max_length=50, blank=True)
+    is_used    = models.BooleanField(default=False)
+    attempts   = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'OTP kod'
+        verbose_name_plural = 'OTP kodlar'
+        ordering = ['-created_at']
+
+    @staticmethod
+    def generate_code():
+        return ''.join(random.choices(string.digits, k=6))
+
+    def is_valid(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        return (
+            not self.is_used
+            and self.attempts < 5
+            and timezone.now() < self.created_at + timedelta(minutes=10)
+        )
+
+    def __str__(self):
+        return f"{self.phone} - {self.code}"
 
     @property
     def is_valid(self):

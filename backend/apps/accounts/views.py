@@ -7,7 +7,9 @@ from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User, EmailVerification, PasswordReset, TelegramLinkToken
+from .models import User, EmailVerification, PasswordReset, TelegramLinkToken, OTPCode
+from .sms import send_otp
+from .serializers import normalize_phone
 from .serializers import (
     RegisterSerializer, LoginSerializer, UserSerializer,
     UserUpdateSerializer, ChangePasswordSerializer
@@ -22,6 +24,167 @@ def get_tokens_for_user(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
+
+
+class SendOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        first_name = request.data.get('first_name', '').strip()
+        last_name  = request.data.get('last_name', '').strip()
+        phone_raw  = request.data.get('phone', '').strip()
+
+        if not first_name:
+            return Response({'error': 'Ism kiriting'}, status=400)
+        if not last_name:
+            return Response({'error': 'Familiya kiriting'}, status=400)
+        if not phone_raw:
+            return Response({'error': 'Telefon raqam kiriting'}, status=400)
+
+        phone = normalize_phone(phone_raw)
+
+        # Agar user allaqachon ro'yxatdan o'tgan bo'lsa
+        if User.objects.filter(phone=phone).exists():
+            return Response({'error': 'Bu telefon raqam allaqachon ro\'yxatdan o\'tgan'}, status=400)
+
+        # Eski kodlarni o'chirish
+        OTPCode.objects.filter(phone=phone, is_used=False).delete()
+
+        code = OTPCode.generate_code()
+        OTPCode.objects.create(
+            phone=phone, code=code,
+            first_name=first_name, last_name=last_name,
+        )
+
+        sms_sent = send_otp(phone, code)
+
+        resp = {'message': f'{phone} raqamiga SMS kod yuborildi', 'phone': phone}
+        if not sms_sent:
+            # SMS xizmati sozlanmagan bo'lsa kodni qaytaramiz (test rejimi)
+            resp['code'] = code
+            resp['note'] = 'SMS xizmati sozlanmagan — kod test uchun ko\'rsatildi'
+
+        return Response(resp)
+
+
+class VerifyOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        phone_raw = request.data.get('phone', '').strip()
+        code      = request.data.get('code', '').strip()
+
+        if not phone_raw or not code:
+            return Response({'error': 'Telefon va kod kiriting'}, status=400)
+
+        phone = normalize_phone(phone_raw)
+        otp   = OTPCode.objects.filter(phone=phone, is_used=False).order_by('-created_at').first()
+
+        if not otp:
+            return Response({'error': 'Kod topilmadi. Qayta SMS yuborish tugmasini bosing'}, status=400)
+
+        otp.attempts += 1
+        otp.save(update_fields=['attempts'])
+
+        if not otp.is_valid():
+            return Response({'error': 'Kod muddati tugagan yoki urinishlar soni oshdi. Qayta yuboring'}, status=400)
+
+        if otp.code != code:
+            remaining = 5 - otp.attempts
+            return Response({'error': f'Kod noto\'g\'ri. {remaining} ta urinish qoldi'}, status=400)
+
+        otp.is_used = True
+        otp.save(update_fields=['is_used'])
+
+        # Foydalanuvchi yaratish
+        import secrets
+        user = User.objects.create_user(
+            username=phone,
+            phone=phone,
+            first_name=otp.first_name,
+            last_name=otp.last_name,
+            password=secrets.token_hex(16),
+        )
+
+        try:
+            from apps.integrations.telegram import notify_new_user
+            notify_new_user(user)
+        except Exception:
+            pass
+
+        tokens = get_tokens_for_user(user)
+        return Response({
+            'user': UserSerializer(user).data,
+            'tokens': tokens,
+            'message': 'Muvaffaqiyatli ro\'yxatdan o\'tdingiz!',
+        })
+
+
+class SendLoginOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        phone_raw = request.data.get('phone', '').strip()
+        if not phone_raw:
+            return Response({'error': 'Telefon raqam kiriting'}, status=400)
+
+        phone = normalize_phone(phone_raw)
+
+        if not User.objects.filter(phone=phone).exists():
+            return Response({'error': 'Bu telefon raqam ro\'yxatdan o\'tmagan'}, status=400)
+
+        OTPCode.objects.filter(phone=phone, is_used=False).delete()
+        code = OTPCode.generate_code()
+        OTPCode.objects.create(phone=phone, code=code)
+
+        sms_sent = send_otp(phone, code)
+
+        resp = {'message': f'{phone} raqamiga SMS kod yuborildi', 'phone': phone}
+        if not sms_sent:
+            resp['code'] = code
+            resp['note'] = 'SMS xizmati sozlanmagan — kod test uchun ko\'rsatildi'
+        return Response(resp)
+
+
+class VerifyLoginOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        phone_raw = request.data.get('phone', '').strip()
+        code      = request.data.get('code', '').strip()
+
+        if not phone_raw or not code:
+            return Response({'error': 'Telefon va kod kiriting'}, status=400)
+
+        phone = normalize_phone(phone_raw)
+        otp   = OTPCode.objects.filter(phone=phone, is_used=False).order_by('-created_at').first()
+
+        if not otp:
+            return Response({'error': 'Kod topilmadi. Qayta SMS yuborish tugmasini bosing'}, status=400)
+
+        otp.attempts += 1
+        otp.save(update_fields=['attempts'])
+
+        if not otp.is_valid():
+            return Response({'error': 'Kod muddati tugagan. Qayta yuboring'}, status=400)
+
+        if otp.code != code:
+            remaining = 5 - otp.attempts
+            return Response({'error': f'Kod noto\'g\'ri. {remaining} ta urinish qoldi'}, status=400)
+
+        otp.is_used = True
+        otp.save(update_fields=['is_used'])
+
+        user = User.objects.filter(phone=phone).first()
+        if not user:
+            return Response({'error': 'Foydalanuvchi topilmadi'}, status=400)
+
+        tokens = get_tokens_for_user(user)
+        return Response({
+            'user': UserSerializer(user).data,
+            'tokens': tokens,
+            'message': 'Muvaffaqiyatli kirdingiz!',
+        })
 
 
 class RegisterView(generics.CreateAPIView):

@@ -2,6 +2,12 @@ from django.urls import re_path
 from . import views
 
 urlpatterns = [
+    # OTP
+    re_path(r'^send-otp/?$',        views.SendOTPView.as_view(),        name='send-otp'),
+    re_path(r'^verify-otp/?$',      views.VerifyOTPView.as_view(),      name='verify-otp'),
+    re_path(r'^send-login-otp/?$',  views.SendLoginOTPView.as_view(),   name='send-login-otp'),
+    re_path(r'^verify-login-otp/?$',views.VerifyLoginOTPView.as_view(), name='verify-login-otp'),
+
     # Auth
     re_path(r'^register/?$', views.RegisterView.as_view(), name='register'),
     re_path(r'^login/?$', views.LoginView.as_view(), name='login'),
